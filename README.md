@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="./media/Banner.png" alt="Ecoshield" width="700" height="250">
+  <img src="./media/Banner.png" alt="Ecoshield" width="800" height="300">
   <h2>
     Ecoshield360 🌱🌍
   </h2>
