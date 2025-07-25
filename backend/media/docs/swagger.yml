@@ -1,0 +1,20 @@
+openapi: 3.1.0
+info:
+  title: EcoShield360 API
+  contact:
+    name: Stellar Colombian technology
+    url: https://www.stellarco.online/
+    email: stellarcolsupp@gmail.com
+  version: 1.0.0
+paths: {}
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+security:
+- bearerAuth: []
+servers:
+- url: http://localhost:3000
+  description: Local Server
