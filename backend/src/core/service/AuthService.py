@@ -1,9 +1,10 @@
+#AuthService.py
 from core.service.UserService import UserService
 from core.service.EmailService import EmailService
 from api.dto.Auth.AuthResponse import AuthResponse
 from api.dto.Auth.AuthLoginRequest import AuthLoginRequest
 from core.interceptors.RunInterceptors import run_interceptors
-from core.interceptors.User.ConfirmedMailInterceptor import validate_confirmed_mail
+from core.interceptors.User.ConfirmedMailInterceptor import validate_confirmed_email
 from api.dto.User.UserDto import AuthRegisterRequest
 from infrastructure.model.User import User
 from shared.utils.JwtUtils import generate_token
@@ -11,12 +12,15 @@ from infrastructure.model.EmailVerificationToken import EmailVerificationToken
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 
+import traceback
+from fastapi import HTTPException
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class AuthService:
     def __init__(self):
-        self.user_service = UserService()
-        self.email_service = EmailService()
+        self.user_service = UserService
+        self.email_service = EmailService
 
     async def login(self, request_data: dict, db: Session) -> AuthResponse:
         login_request = AuthLoginRequest(**request_data)
@@ -32,7 +36,7 @@ class AuthService:
                 status=False
             )
 
-        await run_interceptors([lambda: validate_confirmed_mail(user)])
+        await run_interceptors([lambda: validate_confirmed_email(user)])
 
         if not pwd_context.verify(password, user.password):
             return AuthResponse(
@@ -54,12 +58,13 @@ class AuthService:
     
     async def register(self, request_data: dict, db: Session) -> AuthResponse:
         register_request = AuthRegisterRequest(**request_data)
-        user_data = register_request()
+        user_data = register_request.dict()
 
         user_service = UserService(db)
 
         try:
             created_user = await user_service.create(user_data)
+            print(user_data)
 
             token_model = EmailVerificationToken.create_for_user(created_user.id)
             db.add(token_model)
@@ -82,10 +87,14 @@ class AuthService:
             )
 
         except Exception as e:
+            
+            print("ERROR:", traceback.format_exc())
+            # raise HTTPException(status_code=500, detail=str(e))
+        
             return AuthResponse(
                 username=user_data.get("username"),
                 message=str(e),
-                jwt=None,
+                jwt="hubo un error en el proceso de registro",
                 status=False
             )
 

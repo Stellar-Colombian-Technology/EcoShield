@@ -25,53 +25,63 @@ class UserService:
 
     async def create(self, user_data: dict) -> User:
         await run_interceptors([
-            lambda data: validate_unique_username(data, self.db),
-            lambda data: validate_unique_email(data, self.db),
-            lambda data: validate_password_strength(data),
-        ], user_data)
+        self._check_username_unique,
+        self._check_email_unique,
+        # self._check_password_strength,
+    ], user_data)
 
         user = User(**user_data)
         user.hash_password()
-        return self.repo.create(user.__dict__)
 
-    async def update(self, user_id: int, update_data: dict) -> User | None:
-        update_data["exclude_id"] = user_id
+        return self.repo.create(user)
 
-        await run_interceptors([
-            lambda data: validate_unique_username(data, self.db),
-            lambda data: validate_unique_email(data, self.db),
-            lambda data: validate_password_strength(data),
-        ], update_data)
+# Métodos privados
+    async def _check_username_unique(self, data: dict):
+        await validate_unique_username(data["username"], self.db)
 
-        if "password" in update_data:
-            temp_user = User(password=update_data["password"])
-            temp_user.hash_password()
-            update_data["password"] = temp_user.password
+    async def _check_email_unique(self, data: dict):
+        await validate_unique_email(data["email"], self.db)
 
-        return self.repo.update(user_id, update_data)
+    # def _check_password_strength(self, data: dict):
+    #     return validate_password_strength(data["password"])
+    #     async def update(self, user_id: int, update_data: dict) -> User | None:
+    #         update_data["exclude_id"] = user_id
 
-    def delete(self, user_id: int) -> bool:
-        return self.repo.delete(user_id)
+    #         await run_interceptors([
+    #             lambda data: validate_unique_username(data, self.db),
+    #             lambda data: validate_unique_email(data, self.db),
+    #             lambda data: validate_password_strength(data),
+    #         ], update_data)
 
-    def find_all(self, page_index=1, page_size=10, search='') -> dict:
-        params = create_params(page_index=page_index, page_size=page_size, search=search)
+    #         if "password" in update_data:
+    #             temp_user = User(password=update_data["password"])
+    #             temp_user.hash_password()
+    #             update_data["password"] = temp_user.password
 
-        query = self.db.query(User)
-        if params["search"]:
-            search_filter = f"%{params['search']}%"
-            query = query.filter(
-                (User.username.ilike(search_filter)) |
-                (User.first_name.ilike(search_filter)) |
-                (User.last_name.ilike(search_filter))
-            )
+    #         return self.repo.update(user_id, update_data)
 
-        total = query.count()
-        users = query.offset((params["page_index"] - 1) * params["page_size"]).limit(params["page_size"]).all()
+    #     def delete(self, user_id: int) -> bool:
+    #         return self.repo.delete(user_id)
 
-        return create_pager(
-            registers=users,
-            total=total,
-            page_index=params["page_index"],
-            page_size=params["page_size"],
-            search=params["search"]
-        )
+    #     def find_all(self, page_index=1, page_size=10, search='') -> dict:
+    #         params = create_params(page_index=page_index, page_size=page_size, search=search)
+
+    #         query = self.db.query(User)
+    #         if params["search"]:
+    #             search_filter = f"%{params['search']}%"
+    #             query = query.filter(
+    #                 (User.username.ilike(search_filter)) |
+    #                 (User.first_name.ilike(search_filter)) |
+    #                 (User.last_name.ilike(search_filter))
+    #             )
+
+    #         total = query.count()
+    #         users = query.offset((params["page_index"] - 1) * params["page_size"]).limit(params["page_size"]).all()
+
+    #         return create_pager(
+    #             registers=users,
+    #             total=total,
+    #             page_index=params["page_index"],
+    #             page_size=params["page_size"],
+    #             search=params["search"]
+    #         )

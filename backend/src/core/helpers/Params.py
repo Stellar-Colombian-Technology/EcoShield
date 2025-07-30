@@ -42,3 +42,16 @@ class Params:
             search=new_search,
             max_page_size=self.max_page_size
         )
+    
+def create_params(
+    page_size: int = 10,
+    page_index: int = 1,
+    search: str = '',
+    max_page_size: int = 50
+) -> Params:
+    return Params(
+        page_size=page_size,
+        page_index=page_index,
+        search=search,
+        max_page_size=max_page_size
+    )

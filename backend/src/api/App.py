@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from .routes.AuthRouter import router as AuthRouter
 
 app = FastAPI(
     title="EcoShield360 API",
@@ -12,6 +13,8 @@ app = FastAPI(
     docs_url="/api-docs"
 )
 
+# Routers
+app.include_router(AuthRouter)
 
 
 app.add_middleware(

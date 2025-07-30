@@ -53,3 +53,12 @@ class Pager(Generic[T]):
             "hasNext": self.has_next_page,
             "search": self.search
         }
+    
+def create_pager(registers: List[T], total: int, page_index: int, page_size: int, search: str = "") -> Pager[T]:
+        return Pager(
+        registers=registers,
+        total=total,
+        page_index=page_index,
+        page_size=page_size,
+        search=search
+        )

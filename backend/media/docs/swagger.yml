@@ -6,8 +6,88 @@ info:
     url: https://www.stellarco.online/
     email: stellarcolsupp@gmail.com
   version: 1.0.0
-paths: {}
+paths:
+  /auth/login:
+    post:
+      tags:
+      - Auth
+      summary: Login
+      operationId: login_auth_login_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /auth/register:
+    post:
+      tags:
+      - Auth
+      summary: Register
+      operationId: register_auth_register_post
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+  /auth/verify-email:
+    get:
+      tags:
+      - Auth
+      summary: Verify Email
+      operationId: verify_email_auth_verify_email_get
+      parameters:
+      - name: token
+        in: query
+        required: true
+        schema:
+          type: string
+          title: Token
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema: {}
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
 components:
+  schemas:
+    HTTPValidationError:
+      properties:
+        detail:
+          items:
+            $ref: '#/components/schemas/ValidationError'
+          type: array
+          title: Detail
+      type: object
+      title: HTTPValidationError
+    ValidationError:
+      properties:
+        loc:
+          items:
+            anyOf:
+            - type: string
+            - type: integer
+          type: array
+          title: Location
+        msg:
+          type: string
+          title: Message
+        type:
+          type: string
+          title: Error Type
+      type: object
+      required:
+      - loc
+      - msg
+      - type
+      title: ValidationError
   securitySchemes:
     bearerAuth:
       type: http

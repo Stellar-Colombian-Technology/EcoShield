@@ -1,10 +1,11 @@
+#EmailService.py
 import os
 from datetime import datetime, timedelta
 from pathlib import Path
 from fastapi import BackgroundTasks
 from infrastructure.model import User, EmailVerificationToken
 from infrastructure.config.Db import get_db
-from infrastructure.config.mailConfig import MailService  
+from infrastructure.services.mailService import MailService
 
 class EmailService:
     @staticmethod

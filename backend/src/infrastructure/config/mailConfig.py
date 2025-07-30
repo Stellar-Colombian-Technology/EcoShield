@@ -1,3 +1,4 @@
+#MailConfig.py
 import os
 from dotenv import load_dotenv
 from emails import Message
@@ -7,8 +8,8 @@ load_dotenv()
 class MailConfig:
     MAIL_HOST = os.getenv("MAIL_HOST", "smtp.gmail.com")
     MAIL_PORT = int(os.getenv("MAIL_PORT", 587))
-    MAIL_USERNAME = os.getenv("MAIL_USERNAME", "angelmini508@gmail.com")
-    MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "wjordmxsuduomdzx")
+    MAIL_USERNAME = os.getenv("MAIL_USERNAME", "stellarcolsupp@gmail.com")
+    MAIL_PASSWORD = os.getenv("MAIL_PASSWORD", "esik dmtx ooqy swgu")
     MAIL_FROM = os.getenv("MAIL_USERNAME")  
     MAIL_FROM_NAME = "Ecoshield360"  
     MAIL_TLS = True  

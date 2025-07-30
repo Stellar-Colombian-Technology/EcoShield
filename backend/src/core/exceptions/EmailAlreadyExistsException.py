@@ -1,4 +1,4 @@
-import shared.errors.ApiResponse as ApiResponse
+from shared.errors.ApiResponse import ApiResponse
 
 class EmailAlreadyExistsException(ApiResponse):
     def __init__(self, message: str = "The email address already exists."):
