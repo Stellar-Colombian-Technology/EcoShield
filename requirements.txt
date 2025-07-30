@@ -26,3 +26,5 @@ celery
 redis
 pyyaml
 email-validator
+jwt
+passlib
