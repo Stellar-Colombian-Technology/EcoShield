@@ -2,7 +2,9 @@ from sqlalchemy import Column, Integer, String, Boolean, ForeignKey
 from sqlalchemy.orm import relationship
 from infrastructure.config.Base import Base
 from passlib.context import CryptContext
-from EmailVerificationToken import EmailVerificationToken
+
+from .EmailVerificationToken import EmailVerificationToken
+from .Role import Role
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -21,6 +23,7 @@ class User(Base):
 
     role_id = Column(Integer, ForeignKey("roles.id"))
     role = relationship("Role", back_populates="users")
+    
     verification_tokens = relationship(
         "EmailVerificationToken", 
         back_populates="user",
