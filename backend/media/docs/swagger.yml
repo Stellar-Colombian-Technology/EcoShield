@@ -7,49 +7,102 @@ info:
     email: stellarcolsupp@gmail.com
   version: 1.0.0
 paths:
-  /auth/login:
+  /api/v1/air-quality/summary:
     post:
       tags:
-      - Auth
-      summary: Login
-      operationId: login_auth_login_post
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-  /auth/register:
-    post:
-      tags:
-      - Auth
-      summary: Register
-      operationId: register_auth_register_post
-      responses:
-        '200':
-          description: Successful Response
-          content:
-            application/json:
-              schema: {}
-  /auth/verify-email:
-    get:
-      tags:
-      - Auth
-      summary: Verify Email
-      operationId: verify_email_auth_verify_email_get
-      parameters:
-      - name: token
-        in: query
+      - Air Quality
+      summary: Obtener resumen de calidad del aire
+      description: "Obtiene un resumen detallado de la calidad del aire basado en\
+        \ coordenadas geográficas.\n    \n    **Parámetros:**\n    - **lat**: Latitud\
+        \ (entre -90 y 90)\n    - **lon**: Longitud (entre -180 y 180)  \n    - **radius**:\
+        \ Radio de análisis en km (opcional, por defecto 5km)\n    \n    **Retorna:**\n\
+        \    - Datos de concentración de contaminantes (NO2, CO, O3, SO2, CH4, HCHO)\n\
+        \    - Índice de calidad del aire (AQI)\n    - Categoría de calidad del aire\n\
+        \    - Recomendaciones de salud"
+      operationId: get_air_quality_summary_api_v1_air_quality_summary_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CoordinatesRequest'
         required: true
-        schema:
-          type: string
-          title: Token
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AirQualityResponse'
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/air-quality/report:
+    post:
+      tags:
+      - Air Quality
+      summary: Generar reporte PDF de calidad del aire
+      description: "Genera un reporte PDF detallado con los datos de calidad del aire.\n\
+        \    \n    **Parámetros:**\n    - **air_quality_data**: Datos obtenidos del\
+        \ endpoint /summary\n    - **report_title**: Título personalizado para el\
+        \ reporte (opcional)\n    - **include_charts**: Incluir gráficos en el reporte\
+        \ (opcional, por defecto true)\n    \n    **Retorna:**\n    - Archivo PDF\
+        \ para descarga con el reporte completo"
+      operationId: generate_air_quality_report_api_v1_air_quality_report_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateReportRequest'
+        required: true
       responses:
         '200':
           description: Successful Response
           content:
             application/json:
               schema: {}
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
+        '422':
+          description: Validation Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HTTPValidationError'
+  /api/v1/air-quality/report/info:
+    post:
+      tags:
+      - Air Quality
+      summary: Validar datos para reporte
+      description: "Valida los datos de calidad del aire y retorna información del\
+        \ reporte que se generaría.\n    Útil para validar antes de generar el PDF\
+        \ real."
+      operationId: get_report_info_api_v1_air_quality_report_info_post
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateReportRequest'
+        required: true
+      responses:
+        '200':
+          description: Successful Response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ReportResponse'
+        '404':
+          description: Not found
+        '500':
+          description: Internal server error
         '422':
           description: Validation Error
           content:
@@ -58,6 +111,160 @@ paths:
                 $ref: '#/components/schemas/HTTPValidationError'
 components:
   schemas:
+    AirQualityData:
+      properties:
+        coordinates:
+          additionalProperties:
+            type: number
+          type: object
+          title: Coordinates
+        timestamp:
+          type: string
+          format: date-time
+          title: Timestamp
+        no2_density:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: No2 Density
+          description: Densidad de NO2 en mol/m²
+        co_density:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Co Density
+          description: Densidad de CO en mol/m²
+        o3_density:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: O3 Density
+          description: Densidad de O3 en mol/m²
+        so2_density:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: So2 Density
+          description: Densidad de SO2 en mol/m²
+        ch4_density:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Ch4 Density
+          description: Densidad de CH4 en mol/m²
+        hcho_density:
+          anyOf:
+          - type: number
+          - type: 'null'
+          title: Hcho Density
+          description: Densidad de HCHO en mol/m²
+        air_quality_index:
+          anyOf:
+          - type: integer
+            maximum: 500.0
+            minimum: 0.0
+          - type: 'null'
+          title: Air Quality Index
+          description: Índice de calidad del aire (0-500)
+        air_quality_category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Air Quality Category
+          description: Categoría de calidad del aire
+        health_recommendations:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Health Recommendations
+          description: Recomendaciones de salud
+        data_source:
+          type: string
+          title: Data Source
+          description: Fuente de los datos
+          default: Sentinel-5P
+        analysis_radius_km:
+          type: number
+          title: Analysis Radius Km
+          description: Radio de análisis en kilómetros
+      type: object
+      required:
+      - coordinates
+      - timestamp
+      - analysis_radius_km
+      title: AirQualityData
+    AirQualityResponse:
+      properties:
+        success:
+          type: boolean
+          title: Success
+        message:
+          type: string
+          title: Message
+        data:
+          anyOf:
+          - $ref: '#/components/schemas/AirQualityData'
+          - type: 'null'
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+      type: object
+      required:
+      - success
+      - message
+      title: AirQualityResponse
+    CoordinatesRequest:
+      properties:
+        lat:
+          type: number
+          maximum: 90.0
+          minimum: -90.0
+          title: Lat
+          description: Latitud entre -90 y 90
+        lon:
+          type: number
+          maximum: 180.0
+          minimum: -180.0
+          title: Lon
+          description: Longitud entre -180 y 180
+        radius:
+          anyOf:
+          - type: number
+            maximum: 50.0
+            minimum: 0.1
+          - type: 'null'
+          title: Radius
+          description: Radio en km para el análisis
+          default: 5.0
+      type: object
+      required:
+      - lat
+      - lon
+      title: CoordinatesRequest
+    GenerateReportRequest:
+      properties:
+        air_quality_data:
+          $ref: '#/components/schemas/AirQualityData'
+        report_title:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Report Title
+          description: Título del reporte
+          default: Reporte de Calidad del Aire
+        include_charts:
+          anyOf:
+          - type: boolean
+          - type: 'null'
+          title: Include Charts
+          description: Incluir gráficos en el reporte
+          default: true
+      type: object
+      required:
+      - air_quality_data
+      title: GenerateReportRequest
     HTTPValidationError:
       properties:
         detail:
@@ -67,6 +274,29 @@ components:
           title: Detail
       type: object
       title: HTTPValidationError
+    ReportResponse:
+      properties:
+        success:
+          type: boolean
+          title: Success
+        message:
+          type: string
+          title: Message
+        filename:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Filename
+        error:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Error
+      type: object
+      required:
+      - success
+      - message
+      title: ReportResponse
     ValidationError:
       properties:
         loc:
